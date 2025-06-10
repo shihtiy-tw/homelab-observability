@@ -37,6 +37,21 @@ services:
       - monitoring
     labels:
       org.label-schema.group: "monitoring"
+  process-exporter:
+    image: ncabatoff/process-exporter
+    container_name: process-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - ./prometheus/process-exporter.yml:/conf/process-exporter.yml
+    command:
+      - '--config.path=/conf/process-exporter.yml'
+      - '--procfs=/host/proc'
+    privileged: true
+    expose:
+      - 9256
+    networks:
+      - monitoring
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
@@ -111,6 +126,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/plugins:/var/lib/grafana/plugins
     environment:
       - GF_SECURITY_ADMIN_USER=${ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD}
